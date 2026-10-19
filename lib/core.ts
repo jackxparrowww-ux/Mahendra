@@ -1,0 +1,21 @@
+export type Project = {id:string;name:string;client:string;location:string;type:string;area:string;budget:number;progress:number;stage:string;status:string;description:string;isPublic:boolean;image:string};
+export type Entry = {id:string;projectId:string;kind:string;data:any;createdAt:string};
+export type Member = {email:string;role:string;projectIds:string[]};
+export const money = (paise:number) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(paise/100);
+function scaled(value:unknown, digits:number):bigint {const raw=String(value).trim(); if(!/^\d+(\.\d+)?$/.test(raw))throw new Error('Enter a valid positive number.');const [whole,decimal='']=raw.split('.');const padded=(decimal+'0'.repeat(digits+1));return BigInt(whole)*10n**BigInt(digits)+BigInt(padded.slice(0,digits)||'0')+(Number(padded[digits])>=5?1n:0n);}
+export function paise(value:unknown){const n=scaled(value,2);if(n>1000000000000n)throw new Error('Amount is too large.');return Number(n);}
+export function quotationTotal(lines:{qty:number;rate:number}[], tax:number){let subtotal=0n;for(const l of lines){if(!Number.isSafeInteger(l.rate)||l.rate<0)throw new Error('Invalid rate.');subtotal+=(scaled(l.qty,3)*BigInt(l.rate)+500n)/1000n;}const taxAmount=(subtotal*scaled(tax,2)+5000n)/10000n;const total=subtotal+taxAmount;if(total>9007199254740991n)throw new Error('Estimate total is too large.');return {subtotal:Number(subtotal),taxAmount:Number(taxAmount),total:Number(total)};}
+export const clientKinds=['quotation','agreement','payment','update'];
+export function canSeeRecord(role:string,r:Entry){return role!=='client'||clientKinds.includes(r.kind);}
+export function canWrite(role:string,kind:string){return role==='contractor'||role==='supervisor'&&['expense','labour','update'].includes(kind);}
+export const demoProjects:Project[]=[
+{id:'sample-1',name:'The Courtyard House',client:'Sample homeowner',location:'Kota, Rajasthan',type:'Independent home',area:'2,400 sq ft',budget:480000000,progress:68,stage:'Brickwork & plaster',status:'In progress',description:'A family home organised around a light-filled courtyard. Open spaces, natural materials and room to grow.',isPublic:false,image:'/house.jpg'},
+{id:'sample-2',name:'Greenfield Residences',client:'Sample housing society',location:'Jaipur, Rajasthan',type:'Housing society',area:'24 homes',budget:7200000000,progress:32,stage:'Structure',status:'In progress',description:'A connected residential community with shared green spaces and thoughtfully planned homes.',isPublic:false,image:'/society.jpg'},
+{id:'sample-3',name:'The Garden Residence',client:'Sample homeowner',location:'Kota, Rajasthan',type:'Independent home',area:'3,200 sq ft',budget:640000000,progress:100,stage:'Handover',status:'Completed',description:'A calm, contemporary residence that connects generous living spaces with the outdoors.',isPublic:true,image:'/garden.jpg'}];
+export const demoEntries:Entry[]=[
+{id:'d1',projectId:'sample-1',kind:'payment',createdAt:'2026-10-18',data:{title:'Structure completion',amount:96000000,paid:72000000,date:'2026-10-22',notes:'Balance due after stage review'}},
+{id:'d2',projectId:'sample-1',kind:'expense',createdAt:'2026-10-17',data:{title:'Cement · 100 bags',supplier:'Sample building supplier',category:'Materials',amount:3800000,paid:3800000,date:'2026-10-17',notes:'Delivered to site'}},
+{id:'d3',projectId:'sample-2',kind:'payment',createdAt:'2026-10-17',data:{title:'Foundation milestone',amount:480000000,paid:420000000,date:'2026-10-25',notes:''}},
+{id:'d4',projectId:'sample-1',kind:'labour',createdAt:'2026-10-18',data:{title:'Ramesh · sample mason',date:'2026-10-18',days:1,rate:90000,advance:20000,paid:0,amount:90000,notes:'Brickwork, ground floor'}},
+{id:'d5',projectId:'sample-1',kind:'update',createdAt:'2026-10-18',data:{title:'Ground-floor brickwork progressing',date:'2026-10-18',notes:'East-side walls complete. Window openings checked against the drawing. Next: internal plaster preparation.'}},
+{id:'d6',projectId:'sample-1',kind:'quotation',createdAt:'2026-10-15',data:{title:'Boundary wall estimate',date:'2026-10-15',lines:[{description:'Brick masonry',qty:120,unit:'sq ft',rate:18000},{description:'Plaster & finish',qty:120,unit:'sq ft',rate:6500}],tax:0,notes:'Illustrative estimate only. Rates are sample values.'}}];

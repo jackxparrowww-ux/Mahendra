@@ -1,0 +1,4 @@
+# Local portable development only. The starter's loopback-only mock account is:
+WORKSPACE_OWNER_EMAIL=seedy@sites.test
+# In Sites hosting, set WORKSPACE_OWNER_EMAIL to the real owner's sign-in email.
+# Keep .dev.vars private. Never put credentials in .openai/hosting.json.
