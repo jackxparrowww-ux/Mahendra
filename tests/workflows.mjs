@@ -17,7 +17,10 @@ const DB={async batch(statements){sqlite.exec('BEGIN');try{const result=[];for(c
 const objects=new Map();
 globalThis.TEST_ENV={WORKSPACE_OWNER_EMAIL:'owner@example.com',DB,BUCKET:{async put(id,data,meta){objects.set(id,{body:data,...meta})},async get(id){return objects.get(id)||null},async delete(id){objects.delete(id)}}};
 globalThis.TEST_USER={userId:'owner-id',email:'owner@example.com',displayName:'Owner'};
-let server=fs.readFileSync('lib/server.ts','utf8').replace("import { env } from 'cloudflare:workers';","const env=globalThis.TEST_ENV;").replace("import { getChatGPTUser } from '../app/chatgpt-auth';","async function getChatGPTUser(){return globalThis.TEST_USER}").replace("'./core'",JSON.stringify(coreURL));
+const supabaseJsURL = import.meta.resolve('@supabase/supabase-js');
+const supabaseURL=sourceURL(fs.readFileSync('lib/supabase.ts','utf8').replace("'@supabase/supabase-js'",JSON.stringify(supabaseJsURL)));
+const databaseURL=sourceURL(fs.readFileSync('lib/database.ts','utf8').replace("'./supabase'",JSON.stringify(supabaseURL)));
+let server=fs.readFileSync('lib/server.ts','utf8').replace("import { env } from 'cloudflare:workers';","const env=globalThis.TEST_ENV;").replace("import { getChatGPTUser } from '../app/chatgpt-auth';","async function getChatGPTUser(){return globalThis.TEST_USER}").replace("'./core'",JSON.stringify(coreURL)).replace("'./database'",JSON.stringify(databaseURL));
 const serverURL=sourceURL(server);
 const zodURL = import.meta.resolve('zod');
 function route(path){return sourceURL(fs.readFileSync(path,'utf8').replace("'zod'",JSON.stringify(zodURL)).replace("'../../../lib/server'",JSON.stringify(serverURL)).replace("'../../../lib/core'",JSON.stringify(coreURL)).replace("import { env } from 'cloudflare:workers';","const env=globalThis.TEST_ENV;"))}

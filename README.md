@@ -15,11 +15,23 @@ The complete source for the professional construction website and contractor/sup
 
 ## Runtime and hosting
 
-**This is a Cloudflare Worker-backed ChatGPT Sites application. It is not a static Vite export and cannot run its backend on a plain Vercel static deployment.** D1, R2 and the Sites authentication gateway are required for the current production architecture. The prior standalone frontend prototype is retained in Git history.
+The platform supports two deployment models:
 
-The gateway supplies verified `oai-authenticated-user-*` headers and owns the sign-in routes. Do not expose a raw Worker endpoint that trusts client-supplied identity headers. Migrating to standalone Cloudflare or Vercel requires a supported authentication provider and a database/storage adapter; that migration is not implemented here.
+1. **Supabase + Vercel / Node.js (Recommended for standard web hosting)**:
+   - **Database**: PostgreSQL on Supabase. Execute [`supabase_schema.sql`](file:///c:/Users/jackx/OneDrive/Desktop/Mahendra-Real-Estate-Source/mahendra-real-estate/supabase_schema.sql) in your Supabase SQL editor to create all required tables, indexes, and storage bucket security policies.
+   - **File Storage**: Supabase Storage bucket (`documents`).
+   - **Environment Variables**:
+     ```env
+     NEXT_PUBLIC_SUPABASE_URL=https://<your-project-id>.supabase.co
+     SUPABASE_SERVICE_ROLE_KEY=ey... # or NEXT_PUBLIC_SUPABASE_ANON_KEY
+     SUPABASE_STORAGE_BUCKET=documents
+     WORKSPACE_OWNER_EMAIL=your-email@example.com
+     ```
+   - Standard Next.js builds (`npx next build`) run cleanly on Vercel and any Node.js environment.
 
-`.openai/hosting.json` retains the existing Site identity and `DB`/`BUCKET` bindings. Sites provisions those resources and applies tracked migrations when publishing. Do not change its project ID for this existing Site.
+2. **Cloudflare Workers / ChatGPT Sites**:
+   - D1 SQL database and R2 bucket with automated gateway authentication.
+   - `.openai/hosting.json` and wrangler configuration retained for Cloudflare/Sites deployments.
 
 ## Install, verify and develop
 
